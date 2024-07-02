@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Sebastian Bedin <sebabedin@gmail.com>.
+ * Copyright (c) 2023 Daniel David Albarracin <danield.albarracin@gmail.com>.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,7 +29,7 @@
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  *
- * @author : Sebastian Bedin <sebabedin@gmail.com>
+ * @author : Daniel David Albarracin <danield.albarracin@gmail.com>
  */
 
 /********************** inclusions *******************************************/
@@ -41,8 +41,7 @@
 #include "board.h"
 
 #include "task_button.h"
-#include "task_led.h"
-#include "task_ui.h"
+#include "ao_generic.h"
 
 /********************** macros and definitions *******************************/
 
@@ -61,23 +60,14 @@ SemaphoreHandle_t signal_task_led_sem_bin_hndlr;
 /********************** external functions definition ************************/
 void app_init(void)
 {
-	/* Create Semaphores and Queues */
-	vSemaphoreCreateBinary(signal_task_button_sem_bin_hndlr);
-	vSemaphoreCreateBinary(signal_task_led_sem_bin_hndlr);
-
-	/* Check create semaphores and queues */
-
-	configASSERT(NULL != signal_task_button_sem_bin_hndlr);
-	configASSERT(NULL != signal_task_led_sem_bin_hndlr);
-
-	/* Registry CMSIS STM32CubeIDE */
-
-	vQueueAddToRegistry(signal_task_button_sem_bin_hndlr,
-			"Signal Task Button SEM BIN Handler");
-	vQueueAddToRegistry(signal_task_led_sem_bin_hndlr,
-			"Signal Task Led SEM BIN Handler");
+	extern ao_hndlr_t ao_array[];
 
 	BaseType_t ret;
+
+	ao_init(&ao_array[0]);
+	ao_init(&ao_array[1]);
+	ao_init(&ao_array[2]);
+	ao_init(&ao_array[3]);
 
 	ret = xTaskCreate(task_button,
 					  "task_button",
@@ -88,23 +78,8 @@ void app_init(void)
 
 	configASSERT(ret == pdPASS);
 
-	ret = xTaskCreate(task_ui,
-					  "task_ui",
-					  configMINIMAL_STACK_SIZE,
-					  NULL,
-					  tskIDLE_PRIORITY,
-					  NULL);
 
-	configASSERT(ret == pdPASS);
 
-	ret = xTaskCreate(task_led,
-					  "task_led",
-					  configMINIMAL_STACK_SIZE,
-					  NULL,
-					  tskIDLE_PRIORITY,
-					  NULL);
-
-	configASSERT(ret == pdPASS);
 
 	LOGGER_INFO(pinit);
 

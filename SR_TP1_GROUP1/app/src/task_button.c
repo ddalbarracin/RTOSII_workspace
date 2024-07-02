@@ -43,6 +43,7 @@
 #include "board.h"
 #include "logger.h"
 #include "dwt.h"
+#include "ao_generic.h"
 
 /********************** macros and definitions *******************************/
 
@@ -54,60 +55,60 @@
 #define BUTTON_LONG_TIMEOUT_      (2000)
 
 /********************** internal data declaration ****************************/
-
+ao_led_type_t button_type;
+ao_led_stts_t button_stts;
+ao_msg_t button_ao;
 /********************** internal functions declaration ***********************/
 
 /********************** internal data definition *****************************/
 
 /********************** external data definition *****************************/
 
-extern SemaphoreHandle_t signal_task_button_sem_bin_hndlr;
+extern ao_hndlr_t ao_array[];
 
 /********************** internal functions definition ************************/
 
-typedef enum
-{
-  BUTTON_TYPE_NONE,
-  BUTTON_TYPE_PULSE,
-  BUTTON_TYPE_SHORT,
-  BUTTON_TYPE_LONG,
-  BUTTON_TYPE__N,
-} button_type_t;
+
 
 static struct
 {
     uint32_t counter;
+    uint32_t led_counter;
+
 } button;
 
 static void button_init_(void)
 {
   button.counter = 0;
+  button.led_counter = 0;
 }
 
-static button_type_t button_process_state_(bool value)
+static ao_led_type_t button_process_state_(bool value)
 {
-  button_type_t ret = BUTTON_TYPE_NONE;
-  if(value)
-  {
-    button.counter += BUTTON_PERIOD_MS_;
-  }
-  else
-  {
-    if(BUTTON_LONG_TIMEOUT_ <= button.counter)
-    {
-      ret = BUTTON_TYPE_LONG;
-    }
-    else if(BUTTON_SHORT_TIMEOUT_ <= button.counter)
-    {
-      ret = BUTTON_TYPE_SHORT;
-    }
-    else if(BUTTON_PULSE_TIMEOUT_ <= button.counter)
-    {
-      ret = BUTTON_TYPE_PULSE;
-    }
-    button.counter = 0;
-  }
-  return ret;
+	ao_led_type_t ret = AO_LED_TYPE_NONE;
+
+	if (value) {
+
+		button.counter += BUTTON_PERIOD_MS_;
+
+	} else {
+
+		if (BUTTON_LONG_TIMEOUT_ <= button.counter) {
+
+			ret = AO_LED_TYPE_LONG;
+
+		} else if (BUTTON_SHORT_TIMEOUT_ <= button.counter) {
+
+			ret = AO_LED_TYPE_SHORT;
+
+		} else if (BUTTON_PULSE_TIMEOUT_ <= button.counter) {
+
+			ret = AO_LED_TYPE_PULSE;
+		}
+
+		button.counter = 0;
+	}
+	return ret;
 }
 
 /********************** external functions definition ************************/
@@ -121,26 +122,32 @@ void task_button(void* argument)
     GPIO_PinState button_state;
     button_state = HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN);
 
-    button_type_t button_type;
+    ao_led_type_t button_type;
     button_type = button_process_state_(button_state);
 
-    switch (button_type) {
-      case BUTTON_TYPE_NONE:
-        break;
-      case BUTTON_TYPE_PULSE:
-        LOGGER_INFO("button pulse");
-        xSemaphoreGive(signal_task_button_sem_bin_hndlr);
-        break;
-      case BUTTON_TYPE_SHORT:
-        LOGGER_INFO("button short");
-        break;
-      case BUTTON_TYPE_LONG:
-        LOGGER_INFO("button long");
-        break;
-      default:
-        LOGGER_INFO("button error");
-        break;
-    }
+		switch (button_type) {
+		case AO_LED_TYPE_NONE:
+			break;
+
+		case AO_LED_TYPE_PULSE:
+			LOGGER_INFO("button pulse");
+			ao_send_msg(&ao_array[3], button_ao);
+			break;
+
+		case AO_LED_TYPE_SHORT:
+			LOGGER_INFO("button short");
+			ao_send_msg(&ao_array[3], button_ao);
+			break;
+
+		case AO_LED_TYPE_LONG:
+			LOGGER_INFO("button long");
+			ao_send_msg(&ao_array[3], button_ao);
+			break;
+
+		default:
+			LOGGER_INFO("button error");
+			break;
+		}
 
     vTaskDelay((TickType_t)(TASK_PERIOD_MS_ / portTICK_PERIOD_MS));
   }
