@@ -220,22 +220,22 @@ static void ao_task(void *argument)
  */
 static void ao_thread(ao_msg_t msg){
 
-	if((msg.type)&&(msg.stts)){
+	if(msg.type){
 
 		switch (msg.type) {
 
 			case AO_LED_TYPE_PULSE:
-				LOGGER_INFO("led type pulse");
+				LOGGER_INFO("led red type pulse");
 				ao_send_msg(&ao_array[0], msg);
 				break;
 
 			case AO_LED_TYPE_SHORT:
-				LOGGER_INFO("led type short");
+				LOGGER_INFO("led green type short");
 				ao_send_msg(&ao_array[1], msg);
 				break;
 
 			case AO_LED_TYPE_LONG:
-				LOGGER_INFO("led type long");
+				LOGGER_INFO("led blue type long");
 				ao_send_msg(&ao_array[2], msg);
 				break;
 			default:
@@ -252,8 +252,8 @@ static void ao_thread(ao_msg_t msg){
 				break;
 
 			case AO_LED_STATUS_OFF:
-				LOGGER_INFO("led on");
-				ao_led_set(AO_LED_STATUS_ON,AO_LED_STATUS_ON,AO_LED_STATUS_ON);
+				LOGGER_INFO("led off");
+				ao_led_set(AO_LED_STATUS_OFF,AO_LED_STATUS_OFF,AO_LED_STATUS_OFF);
 				break;
 
 			default:
