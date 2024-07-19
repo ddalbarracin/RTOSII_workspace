@@ -24,13 +24,6 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
-/* Demo includes. */
-#include "logger.h"
-#include "dwt.h"
-
-/* Application includes. */
-#include "app.h"
-
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -64,7 +57,6 @@ PCD_HandleTypeDef hpcd_USB_OTG_FS;
 
 osThreadId defaultTaskHandle;
 /* USER CODE BEGIN PV */
-volatile unsigned long ulHighFrequencyTimerTicks;
 
 /* USER CODE END PV */
 
@@ -83,7 +75,6 @@ void StartDefaultTask(void const * argument);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-extern void initialise_monitor_handles(void);
 
 /* USER CODE END 0 */
 
@@ -93,8 +84,8 @@ extern void initialise_monitor_handles(void);
   */
 int main(void)
 {
+
   /* USER CODE BEGIN 1 */
-	initialise_monitor_handles();
 
   /* USER CODE END 1 */
 
@@ -121,11 +112,6 @@ int main(void)
   MX_USB_OTG_FS_PCD_Init();
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
-  /* Start timer */
-	HAL_TIM_Base_Start_IT(&htim2);
-	
-    /* add application, ... */
-	app_init();
 
   /* USER CODE END 2 */
 
@@ -143,8 +129,6 @@ int main(void)
 
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */
-	#ifdef _defaultTask_
-
   /* USER CODE END RTOS_QUEUES */
 
   /* Create the thread(s) */
@@ -153,8 +137,6 @@ int main(void)
   defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
-	#endif
-
   /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
 
@@ -162,6 +144,7 @@ int main(void)
   osKernelStart();
 
   /* We should never get here as control is now taken by the scheduler */
+
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
@@ -436,57 +419,6 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-/* Functions needed when configGENERATE_RUN_TIME_STATS is on */
-void configureTimerForRunTimeStats(void)
-{
-    ulHighFrequencyTimerTicks = 0;
-}
-
-unsigned long getRunTimeCounterValue(void)
-{
-	return ulHighFrequencyTimerTicks;
-}
-
-/* Hook Functions */
-void vApplicationIdleHook(void)
-{
-	/* The idle task can optionally call an application defined hook (or callback)
-	   function - the idle hook. The idle task runs at the very lowest priority,
-	   so such an idle hook function will only get executed when there are no tasks
-	   of higher priority that are able to run. This makes the idle hook function
-	   an ideal place to put the processor into a low power state - providing an
-	   automatic power saving whenever there is no processing to be performed.
-	   The idle hook will only get called if configUSE_IDLE_HOOK is set to 1
-	   https://www.freertos.org/a00016.html
-	   The idle hook is called repeatedly as long as the idle task is running. It
-	   is paramount that the idle hook function does not call any API functions
-	   that could cause it to block.*/
-//	LOGGER_LOG("  +\r\n");
-}
-
-void vApplicationTickHook(void)
-{
-	/* The tick interrupt can optionally call an application defined hook (or callback)
-	   function - the tick hook.
-	   The tick hook will only get called if configUSE_TICK_HOOK is set to 1
-	   https://www.freertos.org/a00016.html
-	   vApplicationTickHook() executes from within an ISR so must be very short, not use
-	   much stack, and not call any API functions that don't end in "FromISR" or "FROM_ISR".*/
-//	LOGGER_LOG("  -\r\n");
-}
-
-void vApplicationStackOverflowHook(xTaskHandle xTask, signed char *pcTaskName)
-{
-	/* Run time stack overflow checking is performed if
-	   configCHECK_FOR_STACK_OVERFLOW is defined to 1 or 2. This hook function is
-	   called if a stack overflow is detected.
-	   https://www.freertos.org/Stacks-and-stack-overflow-checking.html */
-	LOGGER_LOG(" Application Stack Overflow!! on Task: %s\r\n", ( char* )pcTaskName );
-
-    taskENTER_CRITICAL();
-    configASSERT( 0 );   /* hang the execution for debugging purposes */
-    taskEXIT_CRITICAL();
-}
 
 /* USER CODE END 4 */
 
@@ -525,10 +457,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     HAL_IncTick();
   }
   /* USER CODE BEGIN Callback 1 */
-	if (htim->Instance == TIM2)
-	{
-		ulHighFrequencyTimerTicks++;
-	}
 
   /* USER CODE END Callback 1 */
 }
