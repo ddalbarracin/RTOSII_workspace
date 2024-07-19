@@ -41,44 +41,20 @@ extern "C" {
 #endif
 
 /********************** inclusions *******************************************/
-
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
 
 #include "main.h"
 #include "cmsis_os.h"
-
+#include "board.h"
+#include "logger.h"
+#include "dwt.h"
+#include "ao_types.h"
+#include "connection.h"
+#include "ao_led.h"
 /********************** macros ***********************************************/
 
-/********************** typedef **********************************************/
-
-typedef enum
-{
-  AO_LED_MESSAGE_PULSE,
-  AO_LED_MESSAGE_SHORT,
-  AO_LED_MESSAGE_LONG,
-} ao_led_message_t;
-
-typedef struct
-{
-    QueueHandle_t hqueue;   // COLA PARA UI
-} ao_led_handle_ui_t;
-
-typedef struct
-{
-    QueueHandle_t hqueue1;  //COLA PARA EL ROJO
-} ao_led_handle_r_t;
-
-typedef struct
-{
-    QueueHandle_t hqueue3; //COLA PARA EL VERDE
-} ao_led_handle_g_t;
-
-typedef struct
-{
-    QueueHandle_t hqueue2; //COLA PARA EL AZUL
-} ao_led_handle_b_t;
 
 
 /********************** external data declaration ****************************/
@@ -94,6 +70,6 @@ void ao_ui_init(ao_led_handle_ui_t* hao);
 }
 #endif
 
-#endif /* TASK_LED_H_ */
+#endif /* AO_UI_H_ */
 /********************** end of file ******************************************/
 

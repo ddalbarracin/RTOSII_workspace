@@ -32,8 +32,8 @@
  * @author : Sebastian Bedin <sebabedin@gmail.com>
  */
 
-#ifndef AO_LED_R_H_
-#define  AO_LED_R_H_
+#ifndef  AO_LED_H_
+#define  AO_LED_H_
 
 /********************** CPP guard ********************************************/
 #ifdef __cplusplus
@@ -42,24 +42,19 @@ extern "C" {
 
 /********************** inclusions *******************************************/
 
-#include <stdio.h>
-#include <stdint.h>
 #include <stdbool.h>
 
 #include "main.h"
 #include "cmsis_os.h"
-
+#include "ao_types.h"
 
 /********************** macros ***********************************************/
 
 /********************** typedef **********************************************/
 
-
-
 /********************** external data declaration ****************************/
 
 /********************** external functions declaration ***********************/
-
 bool ao_led_send(QueueHandle_t hqueue_aux, ao_led_message_t led_message);
 
 bool ao_led_init(QueueHandle_t hqueue_task);
@@ -69,6 +64,6 @@ bool ao_led_init(QueueHandle_t hqueue_task);
 }
 #endif
 
-#endif /* TASK_LED_H_ */
+#endif /* AO_LED_H_ */
 /********************** end of file ******************************************/
 

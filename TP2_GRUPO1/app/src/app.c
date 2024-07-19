@@ -33,12 +33,6 @@
  */
 
 /********************** inclusions *******************************************/
-#include "main.h"
-#include "cmsis_os.h"
-#include "board.h"
-#include "logger.h"
-#include "dwt.h"
-
 #include "app.h"
 #include "task_button.h"
 

@@ -33,17 +33,8 @@
  */
 
 /********************** inclusions *******************************************/
+#include "task_button.h"
 
-#include <stdio.h>
-#include <stdint.h>
-#include <stdbool.h>
-
-#include "main.h"
-#include "cmsis_os.h"
-#include "board.h"
-#include "logger.h"
-#include "dwt.h"
-#include "ao_ui.h"
 /********************** macros and definitions *******************************/
 
 #define TASK_PERIOD_MS_           (50)
@@ -158,19 +149,19 @@ void task_button(void* argument)
        // LOGGER_LOG("button pulse %d",(int)delay );
 
         msg = AO_LED_MESSAGE_PULSE;
-        ao_ui_send(&ao_ui, msg); //
+        //ao_ui_send(&ao_ui, msg); //
 
         break;
       case BUTTON_TYPE_SHORT:
         //LOGGER_INFO("button short");
         msg = AO_LED_MESSAGE_SHORT;
-        ao_ui_send(&ao_ui, msg); //
+        //ao_ui_send(&ao_ui, msg); //
 
         break;
       case BUTTON_TYPE_LONG:
        // LOGGER_INFO("button long");
         msg = AO_LED_MESSAGE_LONG;
-        ao_ui_send(&ao_ui, msg); //
+        //ao_ui_send(&ao_ui, msg); //
 
         break;
       default:

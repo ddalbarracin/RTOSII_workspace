@@ -42,9 +42,11 @@ extern "C" {
 #endif
 
 /********************** inclusions *******************************************/
-
 #include <stdbool.h>
-#include "ao_ui.h"
+#include "logger.h"
+#include "ao_led.h"
+#include "ao_types.h"
+
 /********************** macros ***********************************************/
 #define MAX_CONNECTION_           (3)
 /********************** typedef **********************************************/

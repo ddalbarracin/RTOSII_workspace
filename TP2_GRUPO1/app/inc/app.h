@@ -41,6 +41,11 @@ extern "C" {
 #endif
 
 /********************** inclusions *******************************************/
+#include "main.h"
+#include "cmsis_os.h"
+#include "board.h"
+#include "logger.h"
+#include "dwt.h"
 
 /********************** macros ***********************************************/
 

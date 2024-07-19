@@ -33,24 +33,11 @@
  */
 
 /********************** inclusions *******************************************/
-
-#include <stdio.h>
-#include <stdint.h>
-#include <stdbool.h>
-
-#include "main.h"
-#include "cmsis_os.h"
-#include "board.h"
-#include "logger.h"
-#include "dwt.h"
-#include "ao_ui.h"
-#include "ao_led.h"
-#include "app.h"
+#include "connection.h"
 
 /********************** macros and definitions *******************************/
 
 #define TASK_PERIOD_MS_           (5000)
-
 
 /********************** internal data declaration ****************************/
 
@@ -70,16 +57,14 @@ extern QueueHandle_t hqueue;
 
 /********************** internal functions definition ************************/
 
-
 /********************** external functions definition ************************/
 
-bool connection_new_connection(ao_led_message_t led_message)
-{
+_Bool connection_new_connection(ao_led_message_t led_message) {
 	QueueHandle_t hqueue_aux;
 
 	LOGGER_INFO("Ingresa nueva conexión: %d", led_message);
 
-	switch (led_message){
+	switch (led_message) {
 
 	case AO_LED_MESSAGE_PULSE:
 
@@ -106,38 +91,33 @@ bool connection_new_connection(ao_led_message_t led_message)
 		break;
 	}
 
+	if (NULL != hqueue_aux) {
 
-
-	if(NULL != hqueue_aux){
-
-	if(true == ao_led_send(hqueue_aux, led_message))
-	{
-		if(0 == task_cnt_)
-		{
-			ao_led_init(hqueue_aux);
-		}
-		LOGGER_INFO("Nueva tarea para la conexión %d", led_message);
-		return true;
-	}
-	else if (ao_led_init(hqueue_aux))
-	{
-		if (pdPASS == ao_led_send(hqueue_aux, led_message))
-		{
+		if (true == ao_led_send(hqueue_aux, led_message)) {
+			if (0 == task_cnt_) {
+				ao_led_init(hqueue_aux);
+			}
 			LOGGER_INFO("Nueva tarea para la conexión %d", led_message);
 			return true;
+		} else if (ao_led_init(hqueue_aux)) {
+			if (pdPASS == ao_led_send(hqueue_aux, led_message)) {
+				LOGGER_INFO("Nueva tarea para la conexión %d", led_message);
+				return true;
+			} else {
+				LOGGER_INFO(
+						"Conexión %d, Error: ¿Cuándo se podría dar este error?",
+						led_message);
+			}
+		} else {
+			LOGGER_INFO("Conexión %d, Error: No se puede crear más recursos",
+					led_message);
 		}
-		else
-		{
-/*VER!!!!!*/		LOGGER_INFO("Conexión %d, Error: ¿Cuándo se podría dar este error?", led_message);
-		}
-	}
-	else
-	{
-		LOGGER_INFO("Conexión %d, Error: No se puede crear más recursos", led_message);
-	}
-	LOGGER_INFO("Conexión %d, Error: No hay más lugar en la cola", led_message);
+		LOGGER_INFO("Conexión %d, Error: No hay más lugar en la cola",
+				led_message);
 
-	}else {LOGGER_INFO("ERROR: hqueue_aux = NULL");}
+	} else {
+		LOGGER_INFO("ERROR: hqueue_aux = NULL");
+	}
 
 	return false;
 }

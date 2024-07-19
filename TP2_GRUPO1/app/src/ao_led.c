@@ -44,7 +44,6 @@
 #include "board.h"
 #include "logger.h"
 #include "dwt.h"
-//#include "ao_ui.h"
 #include "ao_led.h"
 #include "connection.h"
 
