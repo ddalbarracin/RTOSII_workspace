@@ -66,7 +66,7 @@ typedef enum
 
 /********************** external data definition *****************************/
 
-extern SemaphoreHandle_t hsem_led;
+extern SemaphoreHandle_t signal_task_led_sem_bin_hndlr;
 
 /********************** internal functions definition ************************/
 
@@ -85,7 +85,7 @@ void task_led(void *argument)
   {
     led_color_t color;
 
-    if(pdTRUE == xSemaphoreTake(hsem_led, 0))
+    if(pdTRUE == xSemaphoreTake(signal_task_led_sem_bin_hndlr, 0))
     {
       color = LED_COLOR_RED;
     }

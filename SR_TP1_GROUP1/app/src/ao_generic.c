@@ -252,8 +252,13 @@ static void ao_thread(ao_msg_t msg){
 				break;
 
 			case AO_LED_STATUS_OFF:
+
 				LOGGER_INFO("led off");
 				ao_led_set(AO_LED_STATUS_OFF,AO_LED_STATUS_OFF,AO_LED_STATUS_OFF);
+
+				LOGGER_INFO("led on");
+				ao_led_set(AO_LED_STATUS_OFF,AO_LED_STATUS_OFF, AO_LED_STATUS_OFF);
+
 				break;
 
 			default:

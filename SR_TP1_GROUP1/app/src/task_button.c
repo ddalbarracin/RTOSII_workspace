@@ -53,6 +53,7 @@
 #define BUTTON_PULSE_TIMEOUT_     (200)
 #define BUTTON_SHORT_TIMEOUT_     (1000)
 #define BUTTON_LONG_TIMEOUT_      (2000)
+#define LED_TIMER_S				  (1000)
 
 /********************** internal data declaration ****************************/
 ao_led_type_t button_type;
@@ -73,17 +74,83 @@ extern ao_hndlr_t ao_array[];
 static struct
 {
     uint32_t counter;
-    uint32_t led_counter;
+    uint32_t led_red_counter;
+    uint32_t led_green_counter;
+    uint32_t led_blue_counter;
 
 } button;
+
+static struct
+{
+	uint32_t red_timer_flg;
+	uint32_t green_timer_flg;
+	uint32_t blue_timer_flg;
+
+}timer_led;
 
 static void button_init_(void)
 {
   button.counter = 0;
-  button.led_counter = 0;
+  button.led_red_counter = 0;
+  button.led_green_counter = 0;
+  button.led_blue_counter = 0;
+  timer_led.red_timer_flg = 0;
+  timer_led.green_timer_flg = 0;
+  timer_led.blue_timer_flg = 0;
 }
 
-static ao_led_type_t button_process_state_(bool value)
+static ao_msg_t led_process_state()
+{
+	ao_msg_t ret = { .type = AO_LED_TYPE_NONE,
+			.stts = AO_LED_STATUS_NONE };
+
+	if (timer_led.red_timer_flg) {
+
+		button.led_red_counter += BUTTON_PERIOD_MS_;
+
+		if (LED_TIMER_S <= button.led_red_counter){
+
+			button.led_red_counter = 0;
+			timer_led.red_timer_flg = 0;
+			ret.type = AO_LED_TYPE_PULSE;
+			ret.stts = AO_LED_STATUS_OFF;
+		}
+
+	}
+
+	if (timer_led.green_timer_flg) {
+
+		button.led_green_counter += BUTTON_PERIOD_MS_;
+
+		if (LED_TIMER_S <= button.led_green_counter){
+
+			button.led_green_counter = 0;
+			timer_led.green_timer_flg = 0;
+			ret.type = AO_LED_TYPE_SHORT;
+			ret.stts = AO_LED_STATUS_OFF;
+		}
+
+	}
+	if (timer_led.blue_timer_flg) {
+
+		button.led_blue_counter += BUTTON_PERIOD_MS_;
+
+		if (LED_TIMER_S <= button.led_blue_counter){
+
+			button.led_blue_counter = 0;
+			timer_led.blue_timer_flg = 0;
+			ret.type = AO_LED_TYPE_LONG;
+			ret.stts = AO_LED_STATUS_OFF;
+		}
+
+	}
+
+	return(ret);
+
+}
+
+
+static ao_led_type_t button_process_state(_Bool value)
 {
 	ao_led_type_t ret = AO_LED_TYPE_NONE;
 
@@ -96,14 +163,17 @@ static ao_led_type_t button_process_state_(bool value)
 		if (BUTTON_LONG_TIMEOUT_ <= button.counter) {
 
 			ret = AO_LED_TYPE_LONG;
+			timer_led.blue_timer_flg = 1;
 
 		} else if (BUTTON_SHORT_TIMEOUT_ <= button.counter) {
 
 			ret = AO_LED_TYPE_SHORT;
+			timer_led.green_timer_flg = 1;
 
 		} else if (BUTTON_PULSE_TIMEOUT_ <= button.counter) {
 
 			ret = AO_LED_TYPE_PULSE;
+			timer_led.red_timer_flg = 1;
 		}
 
 		button.counter = 0;
@@ -123,33 +193,74 @@ void task_button(void* argument)
     button_state = HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN);
 
     ao_led_type_t button_type;
-    button_type = button_process_state_(button_state);
+    button_type = button_process_state(button_state);
 
-		switch (button_type) {
+    ao_msg_t button_stts;
+
+	switch (button_type) {
 		case AO_LED_TYPE_NONE:
 			break;
 
 		case AO_LED_TYPE_PULSE:
-			LOGGER_INFO("button pulse");
-			ao_send_msg(&ao_array[3], button_ao);
+			LOGGER_INFO("button pulse - led red on");
+			button_stts.type = button_type;
+			button_stts.stts = AO_LED_STATUS_ON;
+			ao_send_msg(&ao_array[3], button_stts);
 			break;
 
 		case AO_LED_TYPE_SHORT:
-			LOGGER_INFO("button short");
-			ao_send_msg(&ao_array[3], button_ao);
+			LOGGER_INFO("button short - led green on");
+			button_stts.type = button_type;
+			button_stts.stts = AO_LED_STATUS_ON;
+			ao_send_msg(&ao_array[3], button_stts);
 			break;
 
 		case AO_LED_TYPE_LONG:
-			LOGGER_INFO("button long");
-			ao_send_msg(&ao_array[3], button_ao);
+			LOGGER_INFO("button long - led blue on");
+			button_stts.type = button_type;
+			button_stts.stts = AO_LED_STATUS_ON;
+			ao_send_msg(&ao_array[3], button_stts);
 			break;
 
 		default:
 			LOGGER_INFO("button error");
 			break;
-		}
 
-    vTaskDelay((TickType_t)(TASK_PERIOD_MS_ / portTICK_PERIOD_MS));
+	}
+
+	ao_msg_t led_stts;
+
+	led_stts = led_process_state();
+
+	switch (led_stts.type) {
+		case AO_LED_TYPE_NONE:
+			break;
+
+		case AO_LED_TYPE_PULSE:
+
+			LOGGER_INFO("button pulse - led red off");
+			ao_send_msg(&ao_array[3], led_stts);
+			break;
+
+		case AO_LED_TYPE_SHORT:
+
+			LOGGER_INFO("button short - led green off");
+			ao_send_msg(&ao_array[3], led_stts);
+			break;
+
+		case AO_LED_TYPE_LONG:
+
+			LOGGER_INFO("button long - led blue off");
+			ao_send_msg(&ao_array[3], led_stts);
+			break;
+
+		default:
+			LOGGER_INFO("button error");
+			break;
+
+	}
+
+	vTaskDelay((TickType_t)(TASK_PERIOD_MS_ / portTICK_PERIOD_MS));
   }
 }
 
