@@ -48,7 +48,7 @@ extern "C" {
 
 #include "main.h"
 #include "cmsis_os.h"
-#include "ao_ui.h"
+
 
 /********************** macros ***********************************************/
 
@@ -60,9 +60,9 @@ extern "C" {
 
 /********************** external functions declaration ***********************/
 
-bool ao_led_send_r(ao_led_handle_r_t* hao, ao_led_message_t msg);
+bool ao_led_send(QueueHandle_t hqueue_aux, ao_led_message_t led_message);
 
-void ao_led_R_init(ao_led_handle_r_t* hao);
+bool ao_led_init(QueueHandle_t hqueue_task);
 
 /********************** End of CPP guard *************************************/
 #ifdef __cplusplus

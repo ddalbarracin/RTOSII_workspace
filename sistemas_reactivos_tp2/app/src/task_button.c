@@ -179,11 +179,6 @@ void task_button(void* argument)
     }
 
 
-
-
-
-
-
    // vTaskDelayUntil((TickType_t)(TASK_PERIOD_MS_ / portTICK_PERIOD_MS));
 
     vTaskDelayUntil(&time, (TickType_t)(TASK_PERIOD_MS_ / portTICK_PERIOD_MS));

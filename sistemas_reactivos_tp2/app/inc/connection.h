@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Sebastian Bedin <sebabedin@gmail.com>.
+ * Copyright (c) 2024 Sebastian Bedin <sebabedin@gmail.com>.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,10 +30,11 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *
  * @author : Sebastian Bedin <sebabedin@gmail.com>
+ * @version	v1.0.0
  */
 
-#ifndef AO_LED_G_H_
-#define  AO_LED_G_H_
+#ifndef CONNECTION_H_
+#define CONNECTION_H_
 
 /********************** CPP guard ********************************************/
 #ifdef __cplusplus
@@ -42,33 +43,23 @@ extern "C" {
 
 /********************** inclusions *******************************************/
 
-#include <stdio.h>
-#include <stdint.h>
 #include <stdbool.h>
-
-#include "main.h"
-#include "cmsis_os.h"
 #include "ao_ui.h"
-
 /********************** macros ***********************************************/
-
+#define MAX_CONNECTION_           (3)
 /********************** typedef **********************************************/
-
-
 
 /********************** external data declaration ****************************/
 
 /********************** external functions declaration ***********************/
 
-bool ao_led_send_g(ao_led_handle_g_t* hao, ao_led_message_t msg);
-
-void ao_led_G_init(ao_led_handle_g_t* hao);
+bool connection_new_connection(ao_led_message_t led_message);
 
 /********************** End of CPP guard *************************************/
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* TASK_LED_H_ */
+#endif /* CONNECTION_H_ */
 /********************** end of file ******************************************/
 

@@ -45,7 +45,8 @@
 #include "logger.h"
 #include "dwt.h"
 //#include "ao_ui.h"
-#include "ao_led_r.h"
+#include "ao_led.h"
+#include "connection.h"
 
 /********************** macros and definitions *******************************/
 
@@ -53,6 +54,7 @@
 #define QUEUE_LENGTH_            (1)
 #define QUEUE_ITEM_SIZE_         (sizeof(ao_led_message_t))
 #define delay_time               (1000000)
+
 /********************** internal data declaration ****************************/
 
 /********************** internal functions declaration ***********************/
@@ -63,65 +65,124 @@
 
 /********************** external data definition *****************************/
 
-extern ao_led_handle_b_t ao_ledb;
-
+extern int task_cnt_;
 /********************** internal functions definition ************************/
+static void delete_task_(void);
+static void task_(void *argument);
 
 
+static void task_(void *argument) {
 
+	QueueHandle_t hqueue_task_connetion = (QueueHandle_t) argument;
 
-static void task_(void *argument)
-{
-  ao_led_handle_b_t* hao = (ao_led_handle_b_t*)argument;
-  while (true)
-  {
-    ao_led_message_t msg;
-    if (pdPASS == xQueueReceive(hao->hqueue2, &msg, portMAX_DELAY))
-    {
-      GPIO_PinState led_state;
+	while (true)
+	{
+		ao_led_message_t led_message;
+		GPIO_PinState led_state;
 
-      if (AO_LED_MESSAGE_LONG== msg)
-      {
-		  led_state = GPIO_PIN_SET;
-		  HAL_GPIO_WritePin(LED_BLUE_PORT, LED_BLUE_PIN, led_state);
-		  vTaskDelay((TickType_t)(TASK_PERIOD_MS_ / portTICK_PERIOD_MS));
-		  led_state = GPIO_PIN_SET;
-		  LOGGER_INFO("led on BLUE");
-		  led_state = GPIO_PIN_RESET;
-		  LOGGER_INFO("led off BLUE");
-		  HAL_GPIO_WritePin(LED_BLUE_PORT, LED_BLUE_PIN, led_state);
+		while (pdPASS == xQueueReceive(hqueue_task_connetion, (ao_led_message_t* )&led_message, 0))
+		{
+			switch (led_message){
 
-      }
+			case AO_LED_MESSAGE_PULSE:
 
-    }
-  }
-}
+				led_state = GPIO_PIN_SET;
+				HAL_GPIO_WritePin(LED_RED_PORT, LED_RED_PIN, led_state);
+				LOGGER_INFO("led on RED");
+
+				vTaskDelay((TickType_t)(TASK_PERIOD_MS_ / portTICK_PERIOD_MS));
+
+				led_state = GPIO_PIN_RESET;
+				HAL_GPIO_WritePin(LED_RED_PORT, LED_RED_PIN, led_state);
+				LOGGER_INFO("led off RED");
+
+				break;
+
+			case AO_LED_MESSAGE_SHORT:
+
+				led_state = GPIO_PIN_SET;
+				HAL_GPIO_WritePin(LED_GREEN_PORT, LED_GREEN_PIN, led_state);
+				LOGGER_INFO("led on GREEN");
+
+				vTaskDelay((TickType_t)(TASK_PERIOD_MS_ / portTICK_PERIOD_MS));
+
+				led_state = GPIO_PIN_RESET;
+				HAL_GPIO_WritePin(LED_GREEN_PORT, LED_GREEN_PIN, led_state);
+				LOGGER_INFO("led off GREEN");
+
+				break;
+
+			case AO_LED_MESSAGE_LONG:
+
+				led_state = GPIO_PIN_SET;
+				HAL_GPIO_WritePin(LED_BLUE_PORT, LED_BLUE_PIN, led_state);
+				LOGGER_INFO("led on BLUE");
+
+				vTaskDelay((TickType_t)(TASK_PERIOD_MS_ / portTICK_PERIOD_MS));
+
+				led_state = GPIO_PIN_RESET;
+				HAL_GPIO_WritePin(LED_BLUE_PORT, LED_BLUE_PIN, led_state);
+				LOGGER_INFO("led off BLUE");
+
+				break;
+
+			default:
+
+				LOGGER_INFO("ERROR ao_led 	task_");
+
+				break;
+			}
+
+		}
+
+		delete_task_();
+	}
+
+		}
 
 
 /********************** external functions definition ************************/
 
-bool ao_led_send_b(ao_led_handle_b_t* hao, ao_led_message_t msg) //CARGA EL MENSAJE LA COLA
+bool ao_led_send(QueueHandle_t hqueue_aux, ao_led_message_t led_message) //CARGA EL MENSAJE LA COLA
 {
-  return (pdPASS == xQueueSend(hao->hqueue2, (void*)&msg, 0));
+  return (pdPASS == xQueueSend(hqueue_aux, (ao_led_message_t* )&led_message, 0));
 }
 
 
 
-void ao_led_B_init(ao_led_handle_b_t* hao) //CREAA LA COLA
+bool ao_led_init(QueueHandle_t hqueue_task) //CREAA LA COLA
 {
 
-	  hao->hqueue2 = xQueueCreate(QUEUE_LENGTH_, QUEUE_ITEM_SIZE_);
-	   while(NULL == hao->hqueue2)
-	   {
-	     // error
-	   }
-  BaseType_t status;
-  status = xTaskCreate(task_, "task_ao_led_B", 128, (void* const)hao, tskIDLE_PRIORITY, NULL);
-  while (pdPASS != status)
-  {
-    // error
-  }
+	  LOGGER_INFO("Crear nueva tarea");
+	  if(task_cnt_ < MAX_CONNECTION_)
+	  {
+	    BaseType_t status;
+	    status = xTaskCreate(task_, "task_connection", 128, (void *)  hqueue_task, tskIDLE_PRIORITY + 1, NULL);
+	    if(pdPASS != status)
+	    {
+	      LOGGER_INFO("No es posible crear mas tareas");
+	      return false;
+	    }
+	    LOGGER_INFO("Nueva tarea creata");
+	    task_cnt_++;
+	    LOGGER_INFO("Cantled_messagead de procesos: %d", task_cnt_);
+	    return true;
+	  }
+	  else
+	  {
+	    LOGGER_INFO("Maxima cantled_messagead de tareas creadas");
+	    return false;
+	  }
 }
+
+static void delete_task_(void)
+{
+  LOGGER_INFO("Elimino tarea");
+  task_cnt_--;
+  LOGGER_INFO("Cant led_messagead de procesos: %d", task_cnt_);
+  vTaskDelete(NULL);
+}
+
 
 
 

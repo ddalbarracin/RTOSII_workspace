@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Sebastian Bedin <sebabedin@gmail.com>.
+ * Copyright (c) 2024 Sebastian Bedin <sebabedin@gmail.com>.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,21 +33,19 @@
  */
 
 /********************** inclusions *******************************************/
-
-
-
 #include "main.h"
 #include "cmsis_os.h"
+#include "board.h"
 #include "logger.h"
 #include "dwt.h"
-#include "board.h"
+
+#include "app.h"
 #include "task_button.h"
-#include "ao_ui.h"
-#include "ao_led_r.h"
-#include "ao_led_b.h"
-#include "ao_led_g.h"
+
 /********************** macros and definitions *******************************/
 
+#define QUEUE_LENGTH_            (10)
+#define QUEUE_ITEM_SIZE_         (sizeof(int))
 
 /********************** internal data declaration ****************************/
 
@@ -57,23 +55,18 @@
 
 /********************** external data declaration *****************************/
 
+QueueHandle_t hqueue;
 
-ao_led_handle_ui_t ao_ui;
-ao_led_handle_r_t ao_ledr;
-ao_led_handle_b_t ao_ledb;
-ao_led_handle_g_t ao_ledg;
 /********************** external functions definition ************************/
 void app_init(void)
 {
-
-	 ao_ui_init(&ao_ui);
-	 ao_led_R_init(&ao_ledr);
-	 ao_led_B_init(&ao_ledb);
-	 ao_led_G_init(&ao_ledg);
-
-
-
   BaseType_t status;
+
+  hqueue = xQueueCreate(QUEUE_LENGTH_, QUEUE_ITEM_SIZE_);
+  while(NULL == hqueue)
+  {
+    // error
+  }
 
   status = xTaskCreate(task_button, "task_button", 128, NULL, tskIDLE_PRIORITY, NULL);
   while (pdPASS != status)

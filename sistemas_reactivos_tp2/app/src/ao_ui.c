@@ -35,6 +35,7 @@
 /********************** inclusions *******************************************/
 
 
+#include <ao_led.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
@@ -45,9 +46,7 @@
 #include "logger.h"
 #include "dwt.h"
 #include "ao_ui.h"
-#include "ao_led_r.h"
-#include "ao_led_b.h"
-#include "ao_led_g.h"
+#include "connection.h"
 
 /********************** macros and definitions *******************************/
 
@@ -66,10 +65,11 @@
 
 
 extern QueueHandle_t hqueue;
-extern ao_led_handle_r_t ao_ledr;
-extern ao_led_handle_b_t ao_ledb;
-extern ao_led_handle_g_t ao_ledg;
 extern ao_led_handle_ui_t ao_ui;
+
+QueueHandle_t hqueue_r;
+QueueHandle_t hqueue_g;
+QueueHandle_t hqueue_b;
 
 
 /********************** internal functions definition ************************/
@@ -78,34 +78,23 @@ extern ao_led_handle_ui_t ao_ui;
 static void task_(void *argument)
 {
   ao_led_handle_ui_t* hao = (ao_led_handle_ui_t*)argument;
+
   while (true)
   {
     ao_led_message_t msg;
     if (pdPASS == xQueueReceive(hao->hqueue, &msg, portMAX_DELAY))
     {
-		    switch (msg)
-		    {
+		      if( (AO_LED_MESSAGE_PULSE == msg) || (AO_LED_MESSAGE_SHORT == msg) || (AO_LED_MESSAGE_LONG  == msg)){
 
-		      case AO_LED_MESSAGE_PULSE:
-		    	  msg = AO_LED_MESSAGE_PULSE;
-		    	  ao_led_send_r(&ao_ledr, msg);
-
-		        break;
-		      case AO_LED_MESSAGE_SHORT:
-		    	  msg = AO_LED_MESSAGE_SHORT;
-		    	  ao_led_send_g(&ao_ledg, msg); //
-
-		        break;
-		      case AO_LED_MESSAGE_LONG:
-		    	  msg = AO_LED_MESSAGE_LONG;
-		    	  ao_led_send_b(&ao_ledb, msg); //
-
-		        break;
-		      default:
-		        LOGGER_INFO("error AO_LED_MESSAGE");
-		        break;
-		    }
-
+		    	  if(connection_new_connection(msg))
+		    	  {
+		    		  LOGGER_INFO("Conexion %d recibida", msg);
+		    	  }
+		    	  else
+		    	  {
+		    		  LOGGER_INFO("Conexion %d rechazada", msg);
+		    	  }
+		     } else { LOGGER_INFO("ERROR TIPO DE MSG"); }
     }
   }
 }
@@ -127,6 +116,24 @@ void ao_ui_init(ao_led_handle_ui_t* hao) //CREAA LA COLA
 
   hao->hqueue = xQueueCreate(QUEUE_LENGTH_, QUEUE_ITEM_SIZE_);
   while(NULL == hao->hqueue)
+  {
+    // error
+  }
+
+  hqueue_r = xQueueCreate(QUEUE_LENGTH_, QUEUE_ITEM_SIZE_);
+  while(NULL == hqueue_r)
+  {
+    // error
+  }
+
+  hqueue_g = xQueueCreate(QUEUE_LENGTH_, QUEUE_ITEM_SIZE_);
+  while(NULL == hqueue_g)
+  {
+    // error
+  }
+
+  hqueue_b = xQueueCreate(QUEUE_LENGTH_, QUEUE_ITEM_SIZE_);
+  while(NULL == hqueue_b)
   {
     // error
   }

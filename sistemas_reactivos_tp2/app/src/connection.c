@@ -1,27 +1,27 @@
 /*
- * Copyright (c) 2023 Sebastian Bedin <sebabedin@gmail.com>.
+ * Copyright (c) 2024 Sebastian Bedin <sebabedin@gmail.com>.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
+ * modification, are permitted provled_messageed that the following conditions are met:
  *
  * 1. Redistributions of source code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
+ *    documentation and/or other materials provled_messageed with the distribution.
  *
  * 3. Neither the name of the copyright holder nor the names of its
  *    contributors may be used to endorse or promote products derived from
  *    this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * THIS SOFTWARE IS PROVled_messageED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
  * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
  * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
  * COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * INCled_messageENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
  * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
  * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
@@ -34,7 +34,6 @@
 
 /********************** inclusions *******************************************/
 
-
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
@@ -44,85 +43,103 @@
 #include "board.h"
 #include "logger.h"
 #include "dwt.h"
-//#include "ao_ui.h"
-#include "ao_led_r.h"
+#include "ao_ui.h"
+#include "ao_led.h"
+#include "app.h"
 
 /********************** macros and definitions *******************************/
 
-#define TASK_PERIOD_MS_           (1000)
-#define QUEUE_LENGTH_            (1)
-#define QUEUE_ITEM_SIZE_         (sizeof(ao_led_message_t))
-#define delay_time               (1000000)
+#define TASK_PERIOD_MS_           (5000)
+
 
 /********************** internal data declaration ****************************/
+
+extern QueueHandle_t hqueue_r;
+extern QueueHandle_t hqueue_g;
+extern QueueHandle_t hqueue_b;
 
 /********************** internal functions declaration ***********************/
 
 /********************** internal data definition *****************************/
 
-
+int task_cnt_;
 
 /********************** external data definition *****************************/
 
-extern ao_led_handle_r_t ao_ledr;
+extern QueueHandle_t hqueue;
 
 /********************** internal functions definition ************************/
 
 
-
-
-static void task_(void *argument) {
-	ao_led_handle_r_t *hao = (ao_led_handle_r_t*) argument;
-	while (true) {
-		ao_led_message_t msg;
-		if (pdPASS == xQueueReceive(hao->hqueue1, &msg, portMAX_DELAY)) {
-			GPIO_PinState led_state;
-		    if (AO_LED_MESSAGE_PULSE== msg)
-		           {
-		     		  led_state = GPIO_PIN_SET;
-		     		  HAL_GPIO_WritePin(LED_RED_PORT, LED_RED_PIN, led_state);
-		     		  vTaskDelay((TickType_t)(TASK_PERIOD_MS_ / portTICK_PERIOD_MS));
-		     		  led_state = GPIO_PIN_SET;
-		     		  LOGGER_INFO("led on RED");
-		     		  led_state = GPIO_PIN_RESET;
-		     		  LOGGER_INFO("led off RED");
-		     		  HAL_GPIO_WritePin(LED_RED_PORT, LED_RED_PIN, led_state);
-
-		           }
-
-
-
-
-		}
-	}
-}
-
-
 /********************** external functions definition ************************/
 
-bool ao_led_send_r(ao_led_handle_r_t* hao, ao_led_message_t msg) //CARGA EL MENSAJE LA COLA
+bool connection_new_connection(ao_led_message_t led_message)
 {
-  return (pdPASS == xQueueSend(hao->hqueue1, (void*)&msg, 0));
+	QueueHandle_t hqueue_aux;
+
+	LOGGER_INFO("Ingresa nueva conexión: %d", led_message);
+
+	switch (led_message){
+
+	case AO_LED_MESSAGE_PULSE:
+
+		hqueue_aux = hqueue_r;
+
+		break;
+
+	case AO_LED_MESSAGE_SHORT:
+
+		hqueue_aux = hqueue_g;
+
+		break;
+
+	case AO_LED_MESSAGE_LONG:
+
+		hqueue_aux = hqueue_b;
+
+		break;
+
+	default:
+
+		hqueue_aux = NULL;
+
+		break;
+	}
+
+
+
+	if(NULL != hqueue_aux){
+
+	if(true == ao_led_send(hqueue_aux, led_message))
+	{
+		if(0 == task_cnt_)
+		{
+			ao_led_init(hqueue_aux);
+		}
+		LOGGER_INFO("Nueva tarea para la conexión %d", led_message);
+		return true;
+	}
+	else if (ao_led_init(hqueue_aux))
+	{
+		if (pdPASS == ao_led_send(hqueue_aux, led_message))
+		{
+			LOGGER_INFO("Nueva tarea para la conexión %d", led_message);
+			return true;
+		}
+		else
+		{
+/*VER!!!!!*/		LOGGER_INFO("Conexión %d, Error: ¿Cuándo se podría dar este error?", led_message);
+		}
+	}
+	else
+	{
+		LOGGER_INFO("Conexión %d, Error: No se puede crear más recursos", led_message);
+	}
+	LOGGER_INFO("Conexión %d, Error: No hay más lugar en la cola", led_message);
+
+	}else {LOGGER_INFO("ERROR: hqueue_aux = NULL");}
+
+	return false;
 }
-
-
-
-void ao_led_R_init(ao_led_handle_r_t* hao) //CREAA LA COLA
-{
-
-	  hao->hqueue1 = xQueueCreate(QUEUE_LENGTH_, QUEUE_ITEM_SIZE_);
-	   while(NULL == hao->hqueue1)
-	   {
-	     // error
-	   }
-  BaseType_t status;
-  status = xTaskCreate(task_, "task_ao_led_R", 128, (void* const)hao, tskIDLE_PRIORITY, NULL);
-  while (pdPASS != status)
-  {
-    // error
-  }
-}
-
-
 
 /********************** end of file ******************************************/
