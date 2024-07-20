@@ -52,7 +52,7 @@
 
 
 extern QueueHandle_t hqueue;
-extern ao_led_handle_ui_t ao_ui;
+ao_led_handle_ui_t ao_ui;
 
 QueueHandle_t hqueue_r;
 QueueHandle_t hqueue_g;

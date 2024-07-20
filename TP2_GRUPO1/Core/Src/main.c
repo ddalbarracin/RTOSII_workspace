@@ -18,18 +18,13 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "string.h"
-#include "cmsis_os.h"
+
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
-/* Demo includes. */
-#include "logger.h"
-#include "dwt.h"
-
 /* Application includes. */
-#include "app.h"
+
 
 /* USER CODE END Includes */
 

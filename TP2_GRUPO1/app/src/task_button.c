@@ -149,19 +149,19 @@ void task_button(void* argument)
        // LOGGER_LOG("button pulse %d",(int)delay );
 
         msg = AO_LED_MESSAGE_PULSE;
-        //ao_ui_send(&ao_ui, msg); //
+        ao_ui_send(&ao_ui, msg);
 
         break;
       case BUTTON_TYPE_SHORT:
         //LOGGER_INFO("button short");
         msg = AO_LED_MESSAGE_SHORT;
-        //ao_ui_send(&ao_ui, msg); //
+        ao_ui_send(&ao_ui, msg);
 
         break;
       case BUTTON_TYPE_LONG:
        // LOGGER_INFO("button long");
         msg = AO_LED_MESSAGE_LONG;
-        //ao_ui_send(&ao_ui, msg); //
+        ao_ui_send(&ao_ui, msg);
 
         break;
       default:

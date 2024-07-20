@@ -49,6 +49,7 @@ extern "C" {
 #include "logger.h"
 #include "dwt.h"
 #include "ao_types.h"
+#include <ao_ui.h>
 /********************** macros ***********************************************/
 
 /********************** typedef **********************************************/
@@ -57,7 +58,7 @@ extern "C" {
 
 /********************** external functions declaration ***********************/
 
-void task_button(void* argument);
+void task_button(void *argument);
 
 /********************** End of CPP guard *************************************/
 #ifdef __cplusplus

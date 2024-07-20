@@ -28,7 +28,11 @@ extern "C" {
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f4xx_hal.h"
-
+#include "logger.h"
+#include "dwt.h"
+#include "string.h"
+#include "cmsis_os.h"
+#include "app.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
