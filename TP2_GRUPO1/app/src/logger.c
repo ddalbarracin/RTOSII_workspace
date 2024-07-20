@@ -65,7 +65,7 @@ void logger_log_print_(char* const msg)
 #else
 void logger_log_print_(char* const msg)
 {
-    return;
+	return;
 }
 #endif
 

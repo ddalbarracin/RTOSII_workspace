@@ -17,14 +17,14 @@ extern "C" {
 
 typedef enum
 {
-  AO_LED_MESSAGE_PULSE,
-  AO_LED_MESSAGE_SHORT,
-  AO_LED_MESSAGE_LONG,
+	AO_LED_MESSAGE_PULSE,
+	AO_LED_MESSAGE_SHORT,
+	AO_LED_MESSAGE_LONG,
 } ao_led_message_t;
 
 typedef struct
 {
-    QueueHandle_t hqueue;   // COLA PARA UI
+	QueueHandle_t hqueue;   // COLA PARA UI
 } ao_led_handle_ui_t;
 
 

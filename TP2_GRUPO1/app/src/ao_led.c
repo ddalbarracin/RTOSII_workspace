@@ -137,14 +137,14 @@ static void task_(void *argument) {
 		delete_task_();
 	}
 
-		}
+}
 
 
 /********************** external functions definition ************************/
 
 bool ao_led_send(QueueHandle_t hqueue_aux, ao_led_message_t led_message) //CARGA EL MENSAJE LA COLA
 {
-  return (pdPASS == xQueueSend(hqueue_aux, (ao_led_message_t* )&led_message, 0));
+	return (pdPASS == xQueueSend(hqueue_aux, (ao_led_message_t* )&led_message, 0));
 }
 
 
@@ -152,34 +152,34 @@ bool ao_led_send(QueueHandle_t hqueue_aux, ao_led_message_t led_message) //CARGA
 bool ao_led_init(QueueHandle_t hqueue_task) //CREAA LA COLA
 {
 
-	  LOGGER_INFO("Crear nueva tarea");
-	  if(task_cnt_ < MAX_CONNECTION_)
-	  {
-	    BaseType_t status;
-	    status = xTaskCreate(task_, "task_connection", 128, (void *)  hqueue_task, tskIDLE_PRIORITY + 1, NULL);
-	    if(pdPASS != status)
-	    {
-	      LOGGER_INFO("No es posible crear mas tareas");
-	      return false;
-	    }
-	    LOGGER_INFO("Nueva tarea creata");
-	    task_cnt_++;
-	    LOGGER_INFO("Cantled_messagead de procesos: %d", task_cnt_);
-	    return true;
-	  }
-	  else
-	  {
-	    LOGGER_INFO("Maxima cantled_messagead de tareas creadas");
-	    return false;
-	  }
+	LOGGER_INFO("Crear nueva tarea");
+	if(task_cnt_ < MAX_CONNECTION_)
+	{
+		BaseType_t status;
+		status = xTaskCreate(task_, "task_connection", 128, (void *)  hqueue_task, tskIDLE_PRIORITY + 1, NULL);
+		if(pdPASS != status)
+		{
+			LOGGER_INFO("No es posible crear mas tareas");
+			return false;
+		}
+		LOGGER_INFO("Nueva tarea creata");
+		task_cnt_++;
+		LOGGER_INFO("Cantled_messagead de procesos: %d", task_cnt_);
+		return true;
+	}
+	else
+	{
+		LOGGER_INFO("Maxima cantled_messagead de tareas creadas");
+		return false;
+	}
 }
 
 static void delete_task_(void)
 {
-  LOGGER_INFO("Elimino tarea");
-  task_cnt_--;
-  LOGGER_INFO("Cant led_messagead de procesos: %d", task_cnt_);
-  vTaskDelete(NULL);
+	LOGGER_INFO("Elimino tarea");
+	task_cnt_--;
+	LOGGER_INFO("Cant led_messagead de procesos: %d", task_cnt_);
+	vTaskDelete(NULL);
 }
 
 

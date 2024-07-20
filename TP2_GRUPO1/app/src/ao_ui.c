@@ -64,26 +64,26 @@ QueueHandle_t hqueue_b;
 
 static void task_(void *argument)
 {
-  ao_led_handle_ui_t* hao = (ao_led_handle_ui_t*)argument;
+	ao_led_handle_ui_t* hao = (ao_led_handle_ui_t*)argument;
 
-  while (true)
-  {
-    ao_led_message_t msg;
-    if (pdPASS == xQueueReceive(hao->hqueue, &msg, portMAX_DELAY))
-    {
-		      if( (AO_LED_MESSAGE_PULSE == msg) || (AO_LED_MESSAGE_SHORT == msg) || (AO_LED_MESSAGE_LONG  == msg)){
+	while (true)
+	{
+		ao_led_message_t msg;
+		if (pdPASS == xQueueReceive(hao->hqueue, &msg, portMAX_DELAY))
+		{
+			if( (AO_LED_MESSAGE_PULSE == msg) || (AO_LED_MESSAGE_SHORT == msg) || (AO_LED_MESSAGE_LONG  == msg)){
 
-		    	  if(connection_new_connection(msg))
-		    	  {
-		    		  LOGGER_INFO("Conexion %d recibida", msg);
-		    	  }
-		    	  else
-		    	  {
-		    		  LOGGER_INFO("Conexion %d rechazada", msg);
-		    	  }
-		     } else { LOGGER_INFO("ERROR TIPO DE MSG"); }
-    }
-  }
+				if(connection_new_connection(msg))
+				{
+					LOGGER_INFO("Conexion %d recibida", msg);
+				}
+				else
+				{
+					LOGGER_INFO("Conexion %d rechazada", msg);
+				}
+			} else { LOGGER_INFO("ERROR TIPO DE MSG"); }
+		}
+	}
 }
 
 
@@ -91,7 +91,7 @@ static void task_(void *argument)
 
 bool ao_ui_send(ao_led_handle_ui_t* hao, ao_led_message_t msg) //CARGA EL MENSAJE LA COLA
 {
-  return (pdPASS == xQueueSend(hao->hqueue, (void*)&msg, 0));
+	return (pdPASS == xQueueSend(hao->hqueue, (void*)&msg, 0));
 }
 
 
@@ -101,38 +101,38 @@ void ao_ui_init(ao_led_handle_ui_t* hao) //CREAA LA COLA
 
 
 
-  hao->hqueue = xQueueCreate(QUEUE_LENGTH_, QUEUE_ITEM_SIZE_);
-  while(NULL == hao->hqueue)
-  {
-    // error
-  }
+	hao->hqueue = xQueueCreate(QUEUE_LENGTH_, QUEUE_ITEM_SIZE_);
+	while(NULL == hao->hqueue)
+	{
+		// error
+	}
 
-  hqueue_r = xQueueCreate(QUEUE_LENGTH_, QUEUE_ITEM_SIZE_);
-  while(NULL == hqueue_r)
-  {
-    // error
-  }
+	hqueue_r = xQueueCreate(QUEUE_LENGTH_, QUEUE_ITEM_SIZE_);
+	while(NULL == hqueue_r)
+	{
+		// error
+	}
 
-  hqueue_g = xQueueCreate(QUEUE_LENGTH_, QUEUE_ITEM_SIZE_);
-  while(NULL == hqueue_g)
-  {
-    // error
-  }
+	hqueue_g = xQueueCreate(QUEUE_LENGTH_, QUEUE_ITEM_SIZE_);
+	while(NULL == hqueue_g)
+	{
+		// error
+	}
 
-  hqueue_b = xQueueCreate(QUEUE_LENGTH_, QUEUE_ITEM_SIZE_);
-  while(NULL == hqueue_b)
-  {
-    // error
-  }
+	hqueue_b = xQueueCreate(QUEUE_LENGTH_, QUEUE_ITEM_SIZE_);
+	while(NULL == hqueue_b)
+	{
+		// error
+	}
 
 
 
-  BaseType_t status;
-  status = xTaskCreate(task_, "task_ao_led", 128, (void* const)hao, tskIDLE_PRIORITY, NULL);
-  while (pdPASS != status)
-  {
-    // error
-  }
+	BaseType_t status;
+	status = xTaskCreate(task_, "task_ao_led", 128, (void* const)hao, tskIDLE_PRIORITY, NULL);
+	while (pdPASS != status)
+	{
+		// error
+	}
 
 }
 

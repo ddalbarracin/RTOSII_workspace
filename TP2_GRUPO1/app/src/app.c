@@ -54,23 +54,23 @@ QueueHandle_t hqueue;
 /********************** external functions definition ************************/
 void app_init(void)
 {
-  BaseType_t status;
+	BaseType_t status;
 
-  hqueue = xQueueCreate(QUEUE_LENGTH_, QUEUE_ITEM_SIZE_);
-  while(NULL == hqueue)
-  {
-    // error
-  }
+	hqueue = xQueueCreate(QUEUE_LENGTH_, QUEUE_ITEM_SIZE_);
+	while(NULL == hqueue)
+	{
+		// error
+	}
 
-  status = xTaskCreate(task_button, "task_button", 128, NULL, tskIDLE_PRIORITY, NULL);
-  while (pdPASS != status)
-  {
-    // error
-  }
+	status = xTaskCreate(task_button, "task_button", 128, NULL, tskIDLE_PRIORITY, NULL);
+	while (pdPASS != status)
+	{
+		// error
+	}
 
-  LOGGER_INFO("app init");
+	LOGGER_INFO("app init");
 
-  cycle_counter_init();
+	cycle_counter_init();
 }
 
 /********************** end of file ******************************************/

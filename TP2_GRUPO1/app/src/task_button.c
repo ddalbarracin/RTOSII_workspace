@@ -72,109 +72,107 @@ bool_t flag_b=false;
 int delay=0;
 typedef enum
 {
-  BUTTON_TYPE_NONE,
-  BUTTON_TYPE_PULSE,
-  BUTTON_TYPE_SHORT,
-  BUTTON_TYPE_LONG,
-  BUTTON_TYPE__N,
+	BUTTON_TYPE_NONE,
+	BUTTON_TYPE_PULSE,
+	BUTTON_TYPE_SHORT,
+	BUTTON_TYPE_LONG,
+	BUTTON_TYPE__N,
 } button_type_t;
 
 static struct
 {
-    uint32_t counter;
+	uint32_t counter;
 } button;
 
 static void button_init_(void)
 {
-  button.counter = 0;
+	button.counter = 0;
 }
 
 static button_type_t button_process_state_(bool value)
 {
-  button_type_t ret = BUTTON_TYPE_NONE;
+	button_type_t ret = BUTTON_TYPE_NONE;
 
-  if(value)
-  {
-    button.counter += BUTTON_PERIOD_MS_;
-  }
-  else
-  {
-    if(BUTTON_LONG_TIMEOUT_2000 < button.counter)
-    {
-      ret = BUTTON_TYPE_LONG;
-      delay =button.counter;
-     LOGGER_INFO("Button Long Time:%d",(int)delay );
-    }
-    else if((BUTTON_SHORT_TIMEOUT_1000 < button.counter) && (BUTTON_SHORT_TIMEOUT_2000 >= button.counter))
-    {
-      ret = BUTTON_TYPE_SHORT;
-      delay =button.counter;
-      LOGGER_INFO("Button Short Time:%d",(int)delay );
-    }
-    else if((BUTTON_PULSE_TIMEOUT_1000 >= button.counter) && (BUTTON_PULSE_TIMEOUT_200 < button.counter))
-    {
-    	ret = BUTTON_TYPE_PULSE;
-    	delay =button.counter;
-    	LOGGER_INFO("Button Pulse Time:%d",(int)delay );
-    }
-    button.counter = 0;
-  }
-  return ret;
+	if(value)
+	{
+		button.counter += BUTTON_PERIOD_MS_;
+	}
+	else
+	{
+		if(BUTTON_LONG_TIMEOUT_2000 < button.counter)
+		{
+			ret = BUTTON_TYPE_LONG;
+			delay =button.counter;
+			LOGGER_INFO("Button Long Time:%d",(int)delay );
+		}
+		else if((BUTTON_SHORT_TIMEOUT_1000 < button.counter) && (BUTTON_SHORT_TIMEOUT_2000 >= button.counter))
+		{
+			ret = BUTTON_TYPE_SHORT;
+			delay =button.counter;
+			LOGGER_INFO("Button Short Time:%d",(int)delay );
+		}
+		else if((BUTTON_PULSE_TIMEOUT_1000 >= button.counter) && (BUTTON_PULSE_TIMEOUT_200 < button.counter))
+		{
+			ret = BUTTON_TYPE_PULSE;
+			delay =button.counter;
+			LOGGER_INFO("Button Pulse Time:%d",(int)delay );
+		}
+		button.counter = 0;
+	}
+
+	return ret;
+
 }
 
 /********************** external functions definition ************************/
 
 void task_button(void* argument)
 {
-  button_init_();
+	button_init_();
 
-  TickType_t time = xTaskGetTickCount();
+	TickType_t time = xTaskGetTickCount();
 
-  while(true)
-  {
-    GPIO_PinState button_state;
-    button_state = HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN);
+	while(true)
+	{
+		GPIO_PinState button_state;
+		button_state = HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN);
 
-    button_type_t button_type;
-    button_type = button_process_state_(button_state);
+		button_type_t button_type;
+		button_type = button_process_state_(button_state);
 
-    ao_led_message_t msg; //ENUM
+		ao_led_message_t msg;
 
-    switch (button_type)
-    {
-      case BUTTON_TYPE_NONE:
-        break;
-      case BUTTON_TYPE_PULSE:
-       //LOGGER_INFO("button pulse %d",(int)delay );
-       // LOGGER_LOG("button pulse %d",(int)delay );
+		switch (button_type)
+		{
+		case BUTTON_TYPE_NONE:
+			break;
 
-        msg = AO_LED_MESSAGE_PULSE;
-        ao_ui_send(&ao_ui, msg);
+		case BUTTON_TYPE_PULSE:
+			LOGGER_INFO("Button Pulse");
+			msg = AO_LED_MESSAGE_PULSE;
+			ao_ui_send(&ao_ui, msg);
+			break;
 
-        break;
-      case BUTTON_TYPE_SHORT:
-        //LOGGER_INFO("button short");
-        msg = AO_LED_MESSAGE_SHORT;
-        ao_ui_send(&ao_ui, msg);
+		case BUTTON_TYPE_SHORT:
+			LOGGER_INFO("Button Short");
+			msg = AO_LED_MESSAGE_SHORT;
+			ao_ui_send(&ao_ui, msg);
+			break;
 
-        break;
-      case BUTTON_TYPE_LONG:
-       // LOGGER_INFO("button long");
-        msg = AO_LED_MESSAGE_LONG;
-        ao_ui_send(&ao_ui, msg);
+		case BUTTON_TYPE_LONG:
+			LOGGER_INFO("Button Long");
+			msg = AO_LED_MESSAGE_LONG;
+			ao_ui_send(&ao_ui, msg);
+			break;
 
-        break;
-      default:
-        LOGGER_INFO("button error");
-        break;
-    }
+		default:
+			LOGGER_INFO("Button Error");
+			break;
+		}
 
+		vTaskDelayUntil(&time, (TickType_t)(TASK_PERIOD_MS_ / portTICK_PERIOD_MS));
 
-   // vTaskDelayUntil((TickType_t)(TASK_PERIOD_MS_ / portTICK_PERIOD_MS));
-
-    vTaskDelayUntil(&time, (TickType_t)(TASK_PERIOD_MS_ / portTICK_PERIOD_MS));
-
-  }
+	}
 }
 
 /********************** end of file ******************************************/
