@@ -33,19 +33,7 @@
  */
 
 /********************** inclusions *******************************************/
-
-
-#include <stdio.h>
-#include <stdint.h>
-#include <stdbool.h>
-
-#include "main.h"
-#include "cmsis_os.h"
-#include "board.h"
-#include "logger.h"
-#include "dwt.h"
 #include "ao_led.h"
-#include "connection.h"
 
 /********************** macros and definitions *******************************/
 

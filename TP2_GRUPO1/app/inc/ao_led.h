@@ -43,10 +43,16 @@ extern "C" {
 /********************** inclusions *******************************************/
 
 #include <stdbool.h>
+#include <stdio.h>
+#include <stdint.h>
 
 #include "main.h"
 #include "cmsis_os.h"
 #include "ao_types.h"
+#include "board.h"
+#include "logger.h"
+#include "dwt.h"
+#include "connection.h"
 
 /********************** macros ***********************************************/
 
