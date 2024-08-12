@@ -89,9 +89,20 @@ static void task_(void *argument)
 
 /********************** external functions definition ************************/
 
-bool ao_ui_send(ao_led_handle_ui_t* hao, ao_led_message_t msg) //CARGA EL MENSAJE LA COLA
+_Bool ao_ui_send(ao_led_handle_ui_t* hao, ao_led_message_t msg)
 {
-	return (pdPASS == xQueueSend(hao->hqueue, (void*)&msg, 0));
+	_Bool stts = false;
+
+	if(pdPASS == xQueueSend(hao->hqueue, (ao_led_message_t* )&msg, 0)){
+		LOGGER_INFO("ao_ui_send: Sendind msg: %d", msg);
+		stts = true;
+	}else
+	{
+		LOGGER_INFO("ao_ui_send: Error Sending msg: %d", msg);
+	}
+
+	return (stts);
+
 }
 
 
@@ -99,9 +110,8 @@ bool ao_ui_send(ao_led_handle_ui_t* hao, ao_led_message_t msg) //CARGA EL MENSAJ
 void ao_ui_init(ao_led_handle_ui_t* hao) //CREAA LA COLA
 {
 
-
-
 	hao->hqueue = xQueueCreate(QUEUE_LENGTH_, QUEUE_ITEM_SIZE_);
+
 	while(NULL == hao->hqueue)
 	{
 		// error
@@ -113,22 +123,8 @@ void ao_ui_init(ao_led_handle_ui_t* hao) //CREAA LA COLA
 		// error
 	}
 
-	hqueue_g = xQueueCreate(QUEUE_LENGTH_, QUEUE_ITEM_SIZE_);
-	while(NULL == hqueue_g)
-	{
-		// error
-	}
-
-	hqueue_b = xQueueCreate(QUEUE_LENGTH_, QUEUE_ITEM_SIZE_);
-	while(NULL == hqueue_b)
-	{
-		// error
-	}
-
-
-
 	BaseType_t status;
-	status = xTaskCreate(task_, "task_ao_led", 128, (void* const)hao, tskIDLE_PRIORITY, NULL);
+	status = xTaskCreate(task_, "task_ao_ui", 128, (void* const)hao, tskIDLE_PRIORITY+1, NULL);
 	while (pdPASS != status)
 	{
 		// error

@@ -74,13 +74,13 @@ static void task_(void *argument) {
 			case AO_LED_MESSAGE_PULSE:
 
 				led_state = GPIO_PIN_SET;
-				HAL_GPIO_WritePin(LED_RED_PORT, LED_RED_PIN, led_state);
+				//HAL_GPIO_WritePin(LED_RED_PORT, LED_RED_PIN, led_state);
 				LOGGER_INFO("led on RED");
 
 				vTaskDelay((TickType_t)(TASK_PERIOD_MS_ / portTICK_PERIOD_MS));
 
 				led_state = GPIO_PIN_RESET;
-				HAL_GPIO_WritePin(LED_RED_PORT, LED_RED_PIN, led_state);
+				//HAL_GPIO_WritePin(LED_RED_PORT, LED_RED_PIN, led_state);
 				LOGGER_INFO("led off RED");
 
 				break;
@@ -88,13 +88,13 @@ static void task_(void *argument) {
 			case AO_LED_MESSAGE_SHORT:
 
 				led_state = GPIO_PIN_SET;
-				HAL_GPIO_WritePin(LED_GREEN_PORT, LED_GREEN_PIN, led_state);
+				//HAL_GPIO_WritePin(LED_GREEN_PORT, LED_GREEN_PIN, led_state);
 				LOGGER_INFO("led on GREEN");
 
 				vTaskDelay((TickType_t)(TASK_PERIOD_MS_ / portTICK_PERIOD_MS));
 
 				led_state = GPIO_PIN_RESET;
-				HAL_GPIO_WritePin(LED_GREEN_PORT, LED_GREEN_PIN, led_state);
+				//HAL_GPIO_WritePin(LED_GREEN_PORT, LED_GREEN_PIN, led_state);
 				LOGGER_INFO("led off GREEN");
 
 				break;
@@ -102,13 +102,13 @@ static void task_(void *argument) {
 			case AO_LED_MESSAGE_LONG:
 
 				led_state = GPIO_PIN_SET;
-				HAL_GPIO_WritePin(LED_BLUE_PORT, LED_BLUE_PIN, led_state);
+				//HAL_GPIO_WritePin(LED_BLUE_PORT, LED_BLUE_PIN, led_state);
 				LOGGER_INFO("led on BLUE");
 
 				vTaskDelay((TickType_t)(TASK_PERIOD_MS_ / portTICK_PERIOD_MS));
 
 				led_state = GPIO_PIN_RESET;
-				HAL_GPIO_WritePin(LED_BLUE_PORT, LED_BLUE_PIN, led_state);
+				//HAL_GPIO_WritePin(LED_BLUE_PORT, LED_BLUE_PIN, led_state);
 				LOGGER_INFO("led off BLUE");
 
 				break;
@@ -130,29 +130,36 @@ static void task_(void *argument) {
 
 /********************** external functions definition ************************/
 
-bool ao_led_send(QueueHandle_t hqueue_aux, ao_led_message_t led_message) //CARGA EL MENSAJE LA COLA
+_Bool ao_led_send(QueueHandle_t hqueue_aux, ao_led_message_t led_message) //CARGA EL MENSAJE LA COLA
 {
-	return (pdPASS == xQueueSend(hqueue_aux, (ao_led_message_t* )&led_message, 0));
+	_Bool stts = false;
+
+	if(pdPASS == xQueueSend(hqueue_aux, (ao_led_message_t* )&led_message, 0)){
+		LOGGER_INFO("ao_led_send: Sended msg: %d", led_mssage);
+		stts = true;
+	}
+
+	return (stts);
 }
 
 
 
-bool ao_led_init(QueueHandle_t hqueue_task) //CREAA LA COLA
+bool ao_led_init(QueueHandle_t hqueue_task)
 {
 
 	LOGGER_INFO("Crear nueva tarea");
 	if(task_cnt_ < MAX_CONNECTION_)
 	{
-		BaseType_t status;
-		status = xTaskCreate(task_, "task_connection", 128, (void *)  hqueue_task, tskIDLE_PRIORITY + 1, NULL);
+
+		status = xTaskCreate(task_, (const char *)(task_cont_), 128, (void *)  hqueue_task, tskIDLE_PRIORITY + 1, NULL);
 		if(pdPASS != status)
 		{
 			LOGGER_INFO("No es posible crear mas tareas");
 			return false;
 		}
-		LOGGER_INFO("Nueva tarea creata");
+		LOGGER_INFO("Nueva tarea creada");
 		task_cnt_++;
-		LOGGER_INFO("Cantled_messagead de procesos: %d", task_cnt_);
+		LOGGER_INFO("Cantidad led_messagead de procesos: %d", task_cnt_);
 		return true;
 	}
 	else

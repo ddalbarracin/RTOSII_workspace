@@ -42,8 +42,6 @@
 /********************** internal data declaration ****************************/
 
 extern QueueHandle_t hqueue_r;
-extern QueueHandle_t hqueue_g;
-extern QueueHandle_t hqueue_b;
 
 /********************** internal functions declaration ***********************/
 
@@ -53,71 +51,52 @@ int task_cnt_;
 
 /********************** external data definition *****************************/
 
-extern QueueHandle_t hqueue;
-
 /********************** internal functions definition ************************/
 
 /********************** external functions definition ************************/
 
 _Bool connection_new_connection(ao_led_message_t led_message) {
-	QueueHandle_t hqueue_aux;
 
 	LOGGER_INFO("Ingresa nueva conexión: %d", led_message);
 
-	switch (led_message) {
+	if (true == ao_led_send(hqueue_r, led_message)) {
 
-	case AO_LED_MESSAGE_PULSE:
+		if (0 == task_cnt_) {
 
-		hqueue_aux = hqueue_r;
+			ao_led_init(hqueue_r);
 
-		break;
-
-	case AO_LED_MESSAGE_SHORT:
-
-		hqueue_aux = hqueue_g;
-
-		break;
-
-	case AO_LED_MESSAGE_LONG:
-
-		hqueue_aux = hqueue_b;
-
-		break;
-
-	default:
-
-		hqueue_aux = NULL;
-
-		break;
-	}
-
-	if (NULL != hqueue_aux) {
-
-		if (true == ao_led_send(hqueue_aux, led_message)) {
-			if (0 == task_cnt_) {
-				ao_led_init(hqueue_aux);
-			}
-			LOGGER_INFO("Nueva tarea para la conexión %d", led_message);
-			return true;
-		} else if (ao_led_init(hqueue_aux)) {
-			if (pdPASS == ao_led_send(hqueue_aux, led_message)) {
-				LOGGER_INFO("Nueva tarea para la conexión %d", led_message);
-				return true;
-			} else {
-				LOGGER_INFO(
-						"Conexión %d, Error: ¿Cuándo se podría dar este error?",
-						led_message);
-			}
-		} else {
-			LOGGER_INFO("Conexión %d, Error: No se puede crear más recursos",
-					led_message);
 		}
-		LOGGER_INFO("Conexión %d, Error: No hay más lugar en la cola",
-				led_message);
+		LOGGER_INFO("Nueva tarea para la conexión %d", led_message);
 
-	} else {
-		LOGGER_INFO("ERROR: hqueue_aux = NULL");
+		return true;
+
 	}
+	else {
+
+		if (ao_led_init(hqueue_r)) {
+
+			if (true == ao_led_send(hqueue_r, led_message)) {
+
+				LOGGER_INFO("Nueva tarea para la conexión %d", led_message);
+
+				return true;
+
+			}
+			else {
+
+				LOGGER_INFO("Conexión %d, Error: ¿Cuándo se podría dar este error?", led_message);
+
+			}
+		}
+		else {
+
+			LOGGER_INFO("Conexión %d, Error: No se puede crear más recursos", led_message);
+		}
+
+		LOGGER_INFO("Conexión %d, Error: No hay más lugar en la cola", led_message);
+	}
+
+
 
 	return false;
 }

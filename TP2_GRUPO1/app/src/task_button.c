@@ -37,7 +37,7 @@
 
 /********************** macros and definitions *******************************/
 
-#define TASK_PERIOD_MS_           (50)
+#define TASK_PERIOD_MS_           (10)
 
 #define BUTTON_PERIOD_MS_         (TASK_PERIOD_MS_)
 #define BUTTON_PULSE_TIMEOUT_200     (200)
@@ -114,7 +114,7 @@ static button_type_t button_process_state_(bool value)
 		else if((BUTTON_PULSE_TIMEOUT_1000 >= button.counter) && (BUTTON_PULSE_TIMEOUT_200 < button.counter))
 		{
 			ret = BUTTON_TYPE_PULSE;
-			delay =button.counter;
+			delay = button.counter;
 			LOGGER_INFO("Button Pulse Time:%d",(int)delay );
 		}
 		button.counter = 0;

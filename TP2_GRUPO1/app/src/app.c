@@ -50,11 +50,13 @@
 /********************** external data declaration *****************************/
 
 QueueHandle_t hqueue;
+extern ao_led_handle_ui_t ao_ui;
 
 /********************** external functions definition ************************/
 void app_init(void)
 {
 	BaseType_t status;
+	ao_ui_init(&ao_ui);
 
 	hqueue = xQueueCreate(QUEUE_LENGTH_, QUEUE_ITEM_SIZE_);
 	while(NULL == hqueue)
